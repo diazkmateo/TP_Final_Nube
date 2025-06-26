@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agregar Delito</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container mt-4">
+        <h1>Agregar Delito</h1>
+        <form method="POST">
+            <div class="mb-3">
+                <label for="fecha_delito_dia_id" class="form-label">ID Día</label>
+                <input type="text" class="form-control" id="fecha_delito_dia_id" name="fecha_delito_dia_id" required>
+            </div>
+            <div class="mb-3">
+                <label for="fecha_delito_dia_numero" class="form-label">Número Día</label>
+                <input type="text" class="form-control" id="fecha_delito_dia_numero" name="fecha_delito_dia_numero" required>
+            </div>
+            <div class="mb-3">
+                <label for="fecha_delito_mes_id" class="form-label">ID Mes</label>
+                <input type="text" class="form-control" id="fecha_delito_mes_id" name="fecha_delito_mes_id" required>
+            </div>
+            <div class="mb-3">
+                <label for="fecha_delito_ano" class="form-label">Año</label>
+                <input type="text" class="form-control" id="fecha_delito_ano" name="fecha_delito_ano" required>
+            </div>
+            <div class="mb-3">
+                <label for="franja_horaria" class="form-label">Franja Horaria</label>
+                <input type="text" class="form-control" id="franja_horaria" name="franja_horaria" required>
+            </div>
+            <div class="mb-3">
+                <label for="barrio_id" class="form-label">ID Barrio</label>
+                <input type="text" class="form-control" id="barrio_id" name="barrio_id" required>
+            </div>
+            <div class="mb-3">
+                <label for="uso_arma" class="form-label">Uso de Arma</label>
+                <input type="text" class="form-control" id="uso_arma" name="uso_arma" required>
+            </div>
+            <div class="mb-3">
+                <label for="uso_moto" class="form-label">Uso de Moto</label>
+                <input type="text" class="form-control" id="uso_moto" name="uso_moto" required>
+            </div>
+            <div class="mb-3">
+                <label for="tipo_delito_id" class="form-label">ID Tipo Delito</label>
+                <input type="text" class="form-control" id="tipo_delito_id" name="tipo_delito_id" required>
+            </div>
+            <div class="mb-3">
+                <label for="info_adicional" class="form-label">Información Adicional</label>
+                <textarea class="form-control" id="info_adicional" name="info_adicional"></textarea>
+            </div>
+            <button type="submit" class="btn btn-success">Agregar</button>
+            <a href="{{ url_for('index') }}" class="btn btn-secondary">Volver</a>
+        </form>
+    </div>
+</body>
+</html>
