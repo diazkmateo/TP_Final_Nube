@@ -1,5 +1,4 @@
 from ldap3 import Server, Connection, NTLM
-
 from flask import Flask, render_template, request, redirect, url_for, flash, session
 import sqlite3
 from sqlite3 import Error
@@ -8,19 +7,7 @@ import os
 
 AD_SERVER = 'ldap://'  # Agregar dirección IP de la VM, donde está el AD
 AD_DOMAIN = 'IFTS.local'
-
-
-### Esto es en caso de que queramos conectarnos a una DB hosteada en la VM, pero no es recomendado para SQLite
-# import pyodbc
-
-# conn = pyodbc.connect(
-#     "DRIVER=SQLite3 ODBC Driver;"
-#     "SERVER=192.168.1.100;"
-#     "DATABASE=YourDatabaseName;"
-#     "UID=your_ad_username;"
-#     "PWD=your_password;"
-# )
-
+AD_SEARCH_TREE = 'OU=Users,DC=IFTS,DC=local'  
 
 
 # Configuración inicial
@@ -55,10 +42,20 @@ def login():
         #     session['logged_in'] = True
         #     flash('Autenticación exitosa', 'success')
         #     return redirect(url_for('index'))
+
         if conn.bind():
-            session['logged_in'] = True
-            flash('Autenticación exitosa', 'success')
-            return redirect(url_for('index'))
+            # Buscar si el usuario pertenece a la OU Users
+            conn.search(
+                search_base=AD_SEARCH_TREE,
+                search_filter=f'(sAMAccountName={username})',
+                attributes=['distinguishedName']
+            )
+            if conn.entries:
+                session['logged_in'] = True,
+                flash('Autenticación exitosa', 'success')
+                return redirect(url_for('index'))
+            else:
+                flash('Usuario no pertenece a ninguna UP autorizada', 'danger')
         else:
             flash('Error de autenticación', 'danger')
     return render_template('login_screen.html')
