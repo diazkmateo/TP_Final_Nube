@@ -4,12 +4,6 @@ import sqlite3
 from sqlite3 import Error
 import os
 
-
-AD_SERVER = 'ldap://'  # Agregar dirección IP de la VM, donde está el AD
-AD_DOMAIN = 'IFTS.local'
-AD_SEARCH_TREE = 'OU=Users,DC=IFTS,DC=local'  
-
-
 # Configuración inicial
 app = Flask(__name__)
 app.secret_key = "clave_secreta_para_mensajes"
@@ -17,6 +11,10 @@ app.secret_key = "clave_secreta_para_mensajes"
 BASE_DIR = os.path.dirname(os.path.abspath(__file__)) 
 DATABASE_FILE = os.path.join(BASE_DIR, "delitos_2023.db")
 
+# Configuración de Active Directory
+AD_SERVER = 'ldap://192.168.0.108'
+AD_DOMAIN = 'IFTS.local'
+AD_SEARCH_TREE = 'DC=IFTS,DC=local' 
 
 def sql_connection():
     try:
@@ -25,7 +23,6 @@ def sql_connection():
     except Error as e:
         print(e)
         return None
-
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -37,38 +34,48 @@ def login():
         server = Server(AD_SERVER)
         conn = Connection(server, user=f'{AD_DOMAIN}\\{username}', password=password, authentication=NTLM)
 
-
-        # if (username == 'admin' and password == 'admin'):
-        #     session['logged_in'] = True
-        #     flash('Autenticación exitosa', 'success')
-        #     return redirect(url_for('index'))
-
         if conn.bind():
-            # Buscar si el usuario pertenece a la OU Users
-            conn.search(
-                search_base=AD_SEARCH_TREE,
-                search_filter=f'(sAMAccountName={username})',
-                attributes=['distinguishedName']
-            )
-            if conn.entries:
-                session['logged_in'] = True,
-                flash('Autenticación exitosa', 'success')
-                return redirect(url_for('index'))
-            else:
-                flash('Usuario no pertenece a ninguna UP autorizada', 'danger')
+            print(f'Conexión exitosa a AD con usuario: {username}')
+            try:
+                print(f'Buscando usuario {username} en AD...')
+                search_result = conn.search(
+                    search_base=AD_SEARCH_TREE,
+                    search_filter=f'(sAMAccountName={username})',
+                    attributes=['distinguishedName']
+                )
+                print("LDAP search result:", search_result)
+                print("LDAP response:", conn.response)
+
+                if conn.entries:
+                    session['logged_in'] = True
+                    print(f'Usuario autenticado: {username}')
+                    flash('Autenticación exitosa', 'success')
+                    return redirect(url_for('index'))
+                else:
+                    print(f'Usuario {username} no pertenece a la OU autorizada')
+                    flash('Usuario no pertenece a ninguna UP autorizada', 'danger')
+
+            except Exception as e:
+                print(f'Error en la búsqueda LDAP: {e}')
+                flash('Error en la búsqueda LDAP', 'danger')
+
         else:
-            flash('Error de autenticación', 'danger')
+            print(f'Error de autenticación para usuario: {username}')
+            print("LDAP result:", conn.result)
+            flash('Error: Usuario y/o contraseña no encontrado', 'danger')
     return render_template('login_screen.html')
 
 @app.route('/')
 def root():
+    session.clear()  # Limpiar la sesión al acceder a la raíz
     if not session.get('logged_in'):
         return redirect(url_for('login'))
     return redirect(url_for('index'))
 
 
-
-### RUTAS DEL CRUD, SE PUEDE IGNORAR ###          
+########################################
+### RUTAS DEL CRUD, SE PUEDE IGNORAR ###
+########################################          
 
 @app.route('/index')
 @app.route('/index/<int:page>')
